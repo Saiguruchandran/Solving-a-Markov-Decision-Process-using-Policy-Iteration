@@ -126,19 +126,125 @@ If the improved policy is the same as the old policy, the policy is considered s
 
 ```python
 
-# -------------------------------------------------
-# Policy Evaluation
-# -------------------------------------------------
+import gymnasium as gym
+import numpy as np
+
+env = gym.make("FrozenLake-v1", map_name="4x4", is_slippery=True)
+env = env.unwrapped
+
+n_states = env.observation_space.n
+n_actions = env.action_space.n
+
+gamma = 0.99
+theta = 1e-8
+
+def policy_evaluation(env, policy, gamma=0.99, theta=1e-8):
+    V = np.zeros(env.observation_space.n)
+    iterations = 0
+
+    while True:
+        delta = 0
+        iterations += 1
+
+        for state in range(env.observation_space.n):
+            v = V[state]
+…
+        if delta < theta:
+            break
+
+    return V, iterations
+
+
+initial_policy = np.ones((env.observation_space.n, env.action_space.n)) / env.action_space.n
+initial_V, eval_iterations = policy_evaluation(env, initial_policy, gamma=gamma, theta=theta)
+print(f"Policy Evaluation converged in {eval_iterations} iterations.")
+print("\nState-Value Function for Uniform Random Policy:")
+print(np.round(initial_V.reshape(4, 4), 4))
+
+def policy_improvement(env, V, gamma=0.99):
+    n_states = env.observation_space.n
+    n_actions = env.action_space.n
+
+    policy = np.zeros((n_states, n_actions))
+
+    for state in range(n_states):
+        action_values = np.zeros(n_actions)
+
+        for action in range(n_actions):
+            for prob, next_state, reward, terminated in env.P[state][action]:
+                action_values[action] += prob * (
+                    reward + gamma * V[next_state] * (not terminated)
+                )
+
+        best_action = np.argmax(action_values)
+        policy[state, best_action] = 1.0
+
+    return policy
+
+def policy_iteration(env, gamma=0.99, theta=1e-8):
+    n_states = env.observation_space.n
+    n_actions = env.action_space.n
+
+    policy = np.ones((n_states, n_actions)) / n_actions
+
+    while True:
+        V = policy_evaluation(env, policy, gamma, theta)
+        new_policy = policy_improvement(env, V, gamma)
+
+        if np.array_equal(policy, new_policy):
+            break
+
+        policy = new_policy
+
+    return policy, V
+
+def print_value_function(V):
+    print("\nOptimal State-Value Function:")
+    print(np.round(V.reshape(4, 4), 4))
+
+
+def print_policy(policy):
+    action_symbols = {
+        0: "←",
+        1: "↓",
+        2: "→",
+        3: "↑"
+    }
+
+    best_actions = np.argmax(policy, axis=1)
+    policy_grid = np.array([
+        action_symbols[action] for action in best_actions
+    ]).reshape(4, 4)
+
+    print("\nOptimal Policy:")
+    print(policy_grid)
+
+def policy_iteration_fixed(env, gamma=0.99, theta=1e-8):
+    n_states = env.observation_space.n
+    n_actions = env.action_space.n
+    policy = np.ones((n_states, n_actions)) / n_actions
+
+    while True:
+        # Unpack the returned tuple (V, iterations) correctly
+        V, _ = policy_evaluation(env, policy, gamma, theta)
+        new_policy = policy_improvement(env, V, gamma)
+
+…    theta=theta
+)
+
+print("Name:SAI GURUCHANDRAN G")
+print("Register Number: 212223240143")
+print_value_function(optimal_value_function)
+print_policy(optimal_policy)
+
+env.close()
 
 
 
-# -------------------------------------------------
-# Policy Improvement
-# -------------------------------------------------
 
-#-------------------------------------------------
-# Policy Iteration
-# -------------------------------------------------
+
+
+
 
 
 
@@ -147,16 +253,11 @@ If the improved policy is the same as the old policy, the policy is considered s
 
 ## Output
 
-```text
-
-Total policy iterations: 
-
-Optimal State-Value Function:
+<img width="557" height="441" alt="image" src="https://github.com/user-attachments/assets/5c47b9d1-e7a8-4b18-a45d-aaa244709d9d" />
 
 
-Optimal Policy:
 
-```
+
 
 
 
@@ -164,17 +265,13 @@ Optimal Policy:
 
 ## Result
 
-```text
-
-
-
-```
+The program was Successfully executed..
 ---
 
 ## Inference
-```text
-
-
-```
----
+Policy Evaluation was successfully implemented using the Bellman Expectation Equation.
+The FrozenLake environment was used to understand the Markov Decision Process.
+A random policy was initialized to calculate the state-value function.
+Iterative evaluation continued until the value function converged within the given threshold.
+The experiment helped understand how an agent evaluates a policy and estimates the expected rewards of different states.
 

@@ -265,8 +265,8 @@ env.close()
 
 ## Result
 
-The program was Successfully executed..
----
+  The program was Successfully executed..
+
 
 ## Inference
 Policy Evaluation was successfully implemented using the Bellman Expectation Equation.
